@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="256" height="256" viewBox="0 0 256 256" role="img" aria-label="NORMA">
+  <defs>
+    <linearGradient id="normaTile" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#4f46e5"/>
+      <stop offset="1" stop-color="#7c83f3"/>
+    </linearGradient>
+  </defs>
+  <!-- app tile -->
+  <rect width="256" height="256" rx="56" fill="url(#normaTile)"/>
+  <!-- the letter N, whose diagonal is a functional dependency X -> A -->
+  <g fill="none" stroke="#ffffff" stroke-width="24" stroke-linecap="round" stroke-linejoin="round">
+    <line x1="78" y1="186" x2="78" y2="70"/>
+    <line x1="78" y1="70"  x2="178" y2="186"/>
+    <line x1="178" y1="70" x2="178" y2="186"/>
+  </g>
+  <!-- the two dependency endpoints, drawn as graph nodes -->
+  <circle cx="78"  cy="70"  r="15" fill="#c7d2fe"/>
+  <circle cx="178" cy="186" r="15" fill="#c7d2fe"/>
+</svg>

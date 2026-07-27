@@ -1,0 +1,24 @@
+cff-version: 1.2.0
+message: "If you use NORMA or its CPAD engine, please cite it."
+title: "NORMA: learn the denial constraints governing a table, detect errors, and normalize it"
+abstract: >-
+  NORMA discovers the functional dependencies and denial constraints a relational table
+  satisfies, scores per-cell data-quality errors by their degree of violation (the CPAD
+  engine), and derives a 3NF/BCNF normalized schema. It exports the discovered constraints
+  to the data-quality ecosystem (Great Expectations, pandera, dbt, SQL, JSON Schema,
+  Frictionless, Metanome, SHACL).
+type: software
+# TODO(release): replace the placeholder author(s) with the real names + ORCIDs before
+# the public, post-acceptance release. Kept anonymous here for double-blind review.
+authors:
+  - name: "NORMA contributors"
+license: Apache-2.0
+repository-code: "https://github.com/normaCPAD/norma"
+keywords:
+  - data quality
+  - denial constraints
+  - functional dependencies
+  - error detection
+  - database normalization
+  - anomaly detection
+version: 0.1.0

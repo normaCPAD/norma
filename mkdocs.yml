@@ -1,0 +1,30 @@
+site_name: NORMA
+site_description: Learn the denial constraints governing a table, detect errors, and normalize it.
+repo_url: https://github.com/normaCPAD/norma
+theme:
+  name: material
+  logo: assets/icon.svg
+  favicon: assets/icon.svg
+  palette:
+    - scheme: default
+      primary: indigo
+      toggle: {icon: material/weather-night, name: Dark mode}
+    - scheme: slate
+      primary: indigo
+      toggle: {icon: material/weather-sunny, name: Light mode}
+  features:
+    - navigation.sections
+    - content.code.copy
+nav:
+  - Home: index.md
+  - Export to your stack: export.md
+  - Contracts & CI: contract.md
+  - Benchmark: bench.md
+  - Python API: library.md
+markdown_extensions:
+  - admonition
+  - tables
+  - toc:
+      permalink: true
+  - pymdownx.superfences
+  - pymdownx.highlight

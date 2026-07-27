@@ -1,0 +1,12 @@
+[Desktop Entry]
+Type=Application
+Name=norma studio
+GenericName=Data quality & normalization
+Comment=Learn denial constraints, detect errors, and normalize relational tables
+Exec=norma-studio
+Icon=norma-studio
+Terminal=false
+Categories=Science;Database;Utility;
+Keywords=data quality;denial constraints;functional dependencies;normalization;
+StartupNotify=true
+StartupWMClass=norma-studio

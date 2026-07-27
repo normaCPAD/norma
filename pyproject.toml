@@ -1,0 +1,60 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "norma-dq"                 # PyPI distribution name ("norma" is taken); import stays `import norma`
+version = "0.1.0"
+description = "Learn the denial constraints governing a table, detect data-quality errors, and propose its normalized relational model."
+readme = "README.md"
+requires-python = ">=3.9"
+license = "Apache-2.0"
+keywords = ["data quality", "denial constraints", "functional dependencies",
+            "error detection", "database normalization", "anomaly detection"]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Developers",
+    "Intended Audience :: Science/Research",
+    "Programming Language :: Python :: 3 :: Only",
+    "Topic :: Database",
+    "Topic :: Scientific/Engineering",
+]
+dependencies = [
+    "numpy",
+    "pandas",
+    "scipy",
+    "scikit-learn",
+    "pyyaml",
+]
+
+[project.urls]
+Homepage = "https://github.com/normaCPAD/norma"
+Repository = "https://github.com/normaCPAD/norma"
+Issues = "https://github.com/normaCPAD/norma/issues"
+
+[project.optional-dependencies]
+gated = ["torch"]          # the differentiable GatedCPAD variant only
+studio = ["PySide6"]       # the desktop application (norma.studio)
+lake = ["pyarrow", "duckdb", "openpyxl"]   # Parquet / DuckDB / Excel ingestion
+baselines = ["pyod", "scikit-learn"]       # Isolation-Forest baseline for `norma bench`
+docs = ["mkdocs-material"]
+dev = ["pytest", "pyyaml", "pyarrow", "openpyxl"]
+
+[project.scripts]
+norma = "norma.cli:main"
+norma-studio = "norma.studio:main"
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["norma*"]
+
+[tool.setuptools.package-data]
+"norma.studio" = ["assets/*.svg", "assets/*.png", "assets/*.ico", "assets/*.icns"]
+
+[tool.ruff]
+line-length = 120
+
+[tool.ruff.lint]
+# Lint for genuine errors (syntax, undefined names, malformed f-strings, invalid
+# comparisons/asserts), not stylistic preferences (import order, line length, ...).
+select = ["E9", "F63", "F7", "F82"]

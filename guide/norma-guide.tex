@@ -1,0 +1,283 @@
+\documentclass[11pt,a4paper]{article}
+
+% ---------------------------------------------------------------------------
+% NORMA -- Installation & Usage Guide
+% Compile:  pdflatex norma-guide.tex   (run twice for the table of contents)
+% ---------------------------------------------------------------------------
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{lmodern}
+\usepackage[margin=2.4cm]{geometry}
+\usepackage{xcolor}
+\usepackage{graphicx}
+\usepackage{booktabs}
+\usepackage{enumitem}
+\usepackage{listings}
+\usepackage{titlesec}
+
+\definecolor{normaIndigo}{HTML}{4F46E5}
+\definecolor{normaDark}{HTML}{312E81}
+\definecolor{codebg}{HTML}{F5F5FA}
+\definecolor{codekw}{HTML}{6366F1}
+\definecolor{codecomment}{HTML}{6B7280}
+
+\usepackage[colorlinks=true,linkcolor=normaIndigo,urlcolor=normaIndigo,
+            citecolor=normaIndigo]{hyperref}
+
+\titleformat{\section}{\Large\bfseries\color{normaDark}}{\thesection}{0.6em}{}
+\titleformat{\subsection}{\large\bfseries\color{normaIndigo}}{\thesubsection}{0.6em}{}
+
+% generic shell / file listings (no language => no keyword clashes)
+\lstdefinestyle{shell}{
+  basicstyle=\ttfamily\footnotesize, backgroundcolor=\color{codebg},
+  frame=single, rulecolor=\color{codebg}, framesep=6pt, breaklines=true,
+  showstringspaces=false, columns=fullflexible, xleftmargin=4pt,
+}
+\lstdefinestyle{py}{
+  style=shell, language=Python,
+  keywordstyle=\color{codekw}\bfseries, commentstyle=\color{codecomment}\itshape,
+  stringstyle=\color{normaDark},
+}
+\lstset{style=shell}
+\newcommand{\norma}{\textsc{norma}}
+\newcommand{\code}[1]{\texttt{#1}}
+
+% ---------------------------------------------------------------------------
+\begin{document}
+
+\begin{titlepage}
+\centering
+\vspace*{3cm}
+\IfFileExists{../norma/studio/assets/icon_256.png}
+  {\includegraphics[width=3cm]{../norma/studio/assets/icon_256.png}\par\vspace{1cm}}{}
+{\Huge\bfseries\color{normaDark} \norma{}}\par
+\vspace{0.4cm}
+{\large\color{normaIndigo} Installation \& Usage Guide}\par
+\vspace{0.3cm}
+{\normalsize Learn the denial constraints that govern a table, detect data-quality
+errors, and normalize it.}\par
+\vfill
+{\small Engine: \textbf{CPAD} (Constrained Predicates for Anomaly Detection)\\[2pt]
+Apache-2.0 \quad$\cdot$\quad \href{https://github.com/normaCPAD/norma}{github.com/normaCPAD/norma}}
+\vspace{2cm}
+\end{titlepage}
+
+\tableofcontents
+\newpage
+
+% ===========================================================================
+\section{Overview}
+\norma{} discovers the functional dependencies (FD) and denial constraints (DC) that a
+single, mostly clean relational table satisfies, scores each cell by its degree of
+\emph{violation} (the CPAD engine), and derives candidate keys, the current normal form,
+and a 3NF/BCNF decomposition. Unlike classical anomaly detectors, it separates a
+\textbf{relational error} (a value that breaks a constraint) from a \textbf{rare-but-valid}
+value. It then exports the discovered constraints to the data-quality tools you already use.
+
+\medskip
+\noindent\textbf{Three ways to use it:} a command-line tool (\code{norma}), a Python library
+(\code{import norma}), and an interactive desktop application (\code{norma studio}).
+
+% ===========================================================================
+\section{Installation}
+
+\subsection{From PyPI}
+\begin{lstlisting}
+pip install norma-dq            # core  (the import name stays: import norma)
+pip install "norma-dq[gated]"   # + PyTorch for the differentiable GatedCPAD variant
+pip install "norma-dq[studio]"  # + PySide6 for the desktop application
+pip install "norma-dq[lake]"    # + Parquet / DuckDB / Excel ingestion
+pip install "norma-dq[baselines]" # + pyod (Isolation-Forest baseline for `norma bench`)
+\end{lstlisting}
+
+\noindent The distribution is named \code{norma-dq} on PyPI, but the Python package you
+import is always \code{norma}.
+
+\subsection{From source}
+\begin{lstlisting}
+git clone https://github.com/normaCPAD/norma.git
+cd norma
+pip install -e ".[studio,lake,baselines,dev]"
+pytest -q                       # run the test suite
+\end{lstlisting}
+
+\subsection{Requirements}
+Python $\geq 3.9$. Core dependencies (NumPy, pandas, SciPy, scikit-learn, PyYAML) are
+installed automatically. The differentiable variant and the desktop app are optional extras.
+
+% ===========================================================================
+\section{Quick start (command line)}
+Given any tabular file, discover its constraints and a proposed data model:
+\begin{lstlisting}
+norma analyze data.csv
+\end{lstlisting}
+This prints the discovered constraints (with confidence), the candidate keys, the current
+normal form, a proposed 3NF/BCNF decomposition, and the worst constraint-violating cells.
+
+% ===========================================================================
+\section{Command-line reference}
+
+\subsection{\code{norma analyze}}
+\begin{lstlisting}
+norma analyze PATH [--learner routed|discrete|gated|ensemble]
+                   [--tau 0.90] [--max-lhs 2] [--cap 300]
+                   [--top 10] [--json model.json]
+\end{lstlisting}
+\begin{itemize}[nosep,leftmargin=1.4em]
+  \item \code{--learner} -- constraint learner; \code{routed} (default) is the complete CPAD.
+  \item \code{--tau} -- minimum FD confidence for the discrete learner (\code{routed}/\code{gated} self-select it).
+  \item \code{--max-lhs} -- maximum left-hand-side size for composite FDs.
+  \item \code{--cap} -- maximum column cardinality treated as a modeling column.
+  \item \code{--top} -- number of violating cells to display.
+  \item \code{--json} -- also write the full model as JSON.
+\end{itemize}
+
+\subsection{\code{norma export} -- to your data-quality stack}
+\begin{lstlisting}
+norma export PATH --to FORMAT [--out DIR] [--learner ...] [--tau ...]
+\end{lstlisting}
+
+\begin{center}
+\begin{tabular}{@{}ll@{}}
+\toprule
+\code{--to} & Output \\
+\midrule
+\code{great\_expectations} & Expectation Suite (keys $\to$ compound-unique; FDs $\to$ row checks) \\
+\code{pandera}             & \code{DataFrameSchema} with group-wise FD and linear checks \\
+\code{dbt}                 & \code{schema.yml} + one singular test (SQL) per dependency \\
+\code{sql\_check}          & ANSI \code{UNIQUE}/\code{CHECK} + violation-monitor views \\
+\code{json\_schema}        & per-record JSON Schema (types / required) \\
+\code{frictionless}        & Table Schema (types + \code{primaryKey}/\code{uniqueKeys}) \\
+\code{metanome}            & FD/DC lines in Metanome result syntax \\
+\code{shacl}               & SHACL shapes with \code{sh:sparql} (knowledge-graph stack) \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\noindent\emph{NORMA discovers the rules; your pipeline enforces them.}
+
+\subsection{\code{norma freeze} / \code{norma check} -- contracts \& CI}
+Freeze the accepted constraints to a versioned \code{norma.yml} that lives in git, then
+re-validate any table against it in continuous integration:
+\begin{lstlisting}
+norma freeze data.csv -o norma.yml
+norma check  data.csv -c norma.yml --fail-on-violations
+\end{lstlisting}
+\code{check} exits with status \code{1} when any constraint is violated, so it gates a
+pipeline directly. A discovered \emph{candidate key} is validated by the robust
+\emph{determinant} property (it determines every column), not by flat-table row uniqueness.
+
+\subsection{\code{norma score} -- score the whole dataset}
+Apply the learned rules to \emph{every} row of a (possibly huge) file, streaming it in
+chunks so memory stays bounded. Without \code{--max-rows}, the functional dependencies are
+discovered on the \emph{entire} file (streaming, no sample); with it, they are learned on a
+sample (which also enables composite and numeric constraints) and every row is still scored.
+\begin{lstlisting}
+norma score data.csv                   # learn FDs on the WHOLE file (streaming, no sample), score all
+norma score data.csv --out scored.csv  # also write norma_score / norma_rule columns
+norma score data.csv --max-rows 200000 # learn on a sample (composite/numeric FDs), score all
+\end{lstlisting}
+With \code{--out}, the data is written back with two columns: \code{norma\_score} (the
+per-row violation degree) and \code{norma\_rule} (the responsible constraint).
+
+\subsection{\code{norma bench} -- reproducible evaluation}
+Evaluate detection on aligned clean\slash dirty pairs (the Raha\slash Baran layout) and report
+AUROC\slash AUPRC against the ground-truth error mask, next to an Isolation-Forest baseline:
+\begin{lstlisting}
+norma bench --data ./datasets --learner routed --json results.json
+\end{lstlisting}
+Either dataset layout is discovered automatically under \code{--data}:
+\begin{lstlisting}
+datasets/<name>/clean.csv     datasets/<name>/dirty.csv
+datasets/<name>_clean.csv     datasets/<name>_dirty.csv
+\end{lstlisting}
+
+% ===========================================================================
+\section{Python \& notebook API}
+\begin{lstlisting}[style=py]
+from norma.core.table import Table
+from norma.models import RoutedCPAD
+from norma.modeling.report import build_model
+from norma.export import export
+
+t = Table.from_csv("data.csv")          # or from_parquet / from_excel / from_json / from_any
+report = build_model(t, RoutedCPAD().fit(t))
+print(report.to_text())
+
+files = export(report, "great_expectations")   # {filename: content}
+\end{lstlisting}
+
+\noindent In Jupyter/Colab, \code{t.profile()} renders an HTML report inline whose top
+violations are colour-coded: \textcolor{red}{constraint violation} versus
+\textcolor{orange!80!black}{rare-but-valid}.
+\begin{lstlisting}[style=py]
+from norma.core.table import Table
+Table.from_csv("data.csv").profile()
+\end{lstlisting}
+
+% ===========================================================================
+\section{The desktop application (\norma{} studio)}
+Launch the interactive application:
+\begin{lstlisting}
+norma-studio          # or:  python -m norma.studio
+\end{lstlisting}
+\textbf{Features.} Open a CSV/Parquet/Excel/JSON file or connect to a relational database;
+discover FD, composite, order and linear constraints; enable/disable them and add expert
+rules (the schema re-synthesizes live); interactive FD-graph and relational-schema diagrams;
+bidirectional visual $\leftrightarrow$ SQL; an anomaly heatmap; constraint-guided repair;
+a one-click data-quality report; and a clean-database builder. The \textbf{File} menu also
+exports the discovered constraints to any ecosystem format, and freezes/checks a
+\code{norma.yml} contract. Bilingual (FR/EN), themeable (light/dark).
+
+% ===========================================================================
+\section{Building a standalone executable}
+A self-contained desktop bundle is produced with PyInstaller:
+\begin{lstlisting}
+cd norma
+bash packaging/build_linux.sh     # -> dist/norma-studio/norma-studio
+\end{lstlisting}
+The script encodes three environment fixes; run it (rather than invoking \code{pyinstaller}
+directly) so they all apply:
+\begin{enumerate}[nosep,leftmargin=1.6em]
+  \item \textbf{Recursion limit} -- the deep NumPy/SciPy/scikit-learn import graph exceeds
+        Python's default; the spec raises it (\code{sys.setrecursionlimit}).
+  \item \textbf{Kerberos library clash} (conda vs.\ system) -- Qt's \code{QtNetwork} is
+        imported during analysis; the script preloads a consistent \code{libkrb5} family.
+  \item \textbf{Symlinks on exFAT/NTFS} -- PyInstaller links shared libraries; the script
+        builds on a native filesystem and copies the bundle back symlink-free
+        (\code{rsync -L}), so it works on external drives.
+\end{enumerate}
+
+\noindent\textbf{Windows / macOS.} The spec embeds \code{icon.ico} (Windows) and
+\code{icon.icns} (macOS, with a \code{.app} bundle). Build on the target OS with
+\code{pyinstaller packaging/norma-studio.spec}.
+
+\subsection{Linux taskbar/dock icon}
+The window icon is set in-app; the \emph{taskbar} icon is resolved from a desktop entry.
+Install it once:
+\begin{lstlisting}
+bash packaging/install_linux_desktop.sh
+\end{lstlisting}
+For a packaged build, point the launcher at the bundled binary:
+\begin{lstlisting}
+sed -i "s|^Exec=.*|Exec=$PWD/dist/norma-studio/norma-studio|" \
+  ~/.local/share/applications/norma-studio.desktop
+\end{lstlisting}
+
+% ===========================================================================
+\section{Troubleshooting}
+\begin{description}[leftmargin=0pt,style=nextline]
+  \item[\code{Spec file ... not found}] You are in the wrong directory. Run from the
+        \code{norma} project root, where \code{packaging/} lives.
+  \item[\code{RecursionError} during a build] Use \code{bash packaging/build\_linux.sh}; if
+        it persists, raise \code{sys.setrecursionlimit} in the spec.
+  \item[\code{undefined symbol: k5\_buf\_cstring}] A conda/system Kerberos mismatch when
+        Qt loads \code{QtNetwork}. Build via the script, or prefix the command with
+        \code{LD\_LIBRARY\_PATH=\$CONDA\_PREFIX/lib}.
+  \item[\code{os.symlink ... Operation not permitted}] The output path is on exFAT/NTFS.
+        Build via the script (it copies symlink-free), or target a native filesystem.
+  \item[Taskbar shows a generic icon] Run \code{install\_linux\_desktop.sh} and launch the
+        app via the \code{norma-studio} command so its window class matches the desktop entry.
+\end{description}
+
+\end{document}

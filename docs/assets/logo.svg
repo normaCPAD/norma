@@ -1,0 +1,24 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="760" height="220" viewBox="0 0 760 220" role="img" aria-label="norma">
+  <defs>
+    <linearGradient id="normaTile" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#4f46e5"/>
+      <stop offset="1" stop-color="#7c83f3"/>
+    </linearGradient>
+  </defs>
+  <!-- icon tile, scaled from the 256-grid mark -->
+  <g transform="translate(20,20) scale(0.703125)">
+    <rect width="256" height="256" rx="56" fill="url(#normaTile)"/>
+    <g fill="none" stroke="#ffffff" stroke-width="24" stroke-linecap="round" stroke-linejoin="round">
+      <line x1="78" y1="186" x2="78" y2="70"/>
+      <line x1="78" y1="70"  x2="178" y2="186"/>
+      <line x1="178" y1="70" x2="178" y2="186"/>
+    </g>
+    <circle cx="78"  cy="70"  r="15" fill="#c7d2fe"/>
+    <circle cx="178" cy="186" r="15" fill="#c7d2fe"/>
+  </g>
+  <!-- wordmark -->
+  <text x="232" y="132" font-family="'Segoe UI','Helvetica Neue',Arial,sans-serif"
+        font-size="118" font-weight="700" letter-spacing="-3" fill="#312e81">norma</text>
+  <text x="236" y="178" font-family="'Segoe UI','Helvetica Neue',Arial,sans-serif"
+        font-size="27" font-weight="500" letter-spacing="0.5" fill="#6366f1">denial-constraint data quality</text>
+</svg>
